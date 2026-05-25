@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hidz | Tools</title>
+    <link rel="icon" href="https://www.gobox.my.id/file/IcHjU.png" type="image/png">
+    
+    <!-- React & ReactDOM via CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX compilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Public Sans"', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Public Sans', sans-serif;
+            overflow-x: hidden;
+        }
+
+        /* Neo-brutalism Shadow & Effects */
+        .neo-shadow { box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); }
+        .neo-shadow-lg { box-shadow: 12px 12px 0px 0px rgba(0,0,0,1); }
+        .neo-shadow-sm { box-shadow: 4px 4px 0px 0px rgba(0,0,0,1); }
+        .neo-active:active {
+            box-shadow: 0px 0px 0px 0px rgba(0,0,0,1) !important;
+            transform: translate(4px, 4px) !important;
+        }
+        .neo-border { border: 4px solid black; }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border-left-color: #000;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef } = React;
+        const API_KEY = "OwMkM";
+
+        const Sun = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+            </svg>
+        );
+
+        const Moon = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            </svg>
+        );
+
+        function App() {
+            const [tab, setTab] = useState('brat');
+            const [text, setText] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [result, setResult] = useState(null);
+            const [theme, setTheme] = useState('dark');
+            
+            // State Parameter
+            const [iqcTime, setIqcTime] = useState('12:00');
+            const [iqcBattery, setIqcBattery] = useState('100');
+            const [iqcCarrier, setIqcCarrier] = useState('4G');
+            const [ssDevice, setSsDevice] = useState('desktop');
+            const [gopaySaldo, setGopaySaldo] = useState('1000');
+            const [gopayKoin, setGopayKoin] = useState('1000');
+            const [gopayPengeluaran, setGopayPengeluaran] = useState('1000');
+            const [gopayBulan, setGopayBulan] = useState('Mei');
+            const [danaNominal, setDanaNominal] = useState('');
+
+            const fileInputRef = useRef(null);
+
+            const handleProcess = async () => {
+                if (tab !== 'uploader' && !text && tab !== 'gopay' && tab !== 'dana') return;
+                setLoading(true);
+                setResult(null);
+
+                try {
+                    if (tab === 'uploader') {
+                        const file = fileInputRef.current?.files?.[0];
+                        if (!file) { setLoading(false); return; }
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        const res = await fetch('https://www.gobox.my.id/upload', { method: 'POST', body: formData });
+                        const data = await res.json();
+                        const url = data.url || data.link || data.result?.url || data.data?.url || data.fileUrl;
+                        if (url) setResult({ type: 'url', content: url });
+                    } else if (tab === 'ssweb') {
+                        const apiUrl = `https://api.siputzx.my.id/api/tools/ssweb?url=${encodeURIComponent(text)}&device=${ssDevice}&theme=dark&fullPage=false`;
+                        setResult({ type: 'image', content: apiUrl });
+                    } else if (tab === 'iqc') {
+                        const apiUrl = `https://api.shny.my.id/api/imagecreator/iqc?time=${encodeURIComponent(iqcTime)}&batteryPercentage=${encodeURIComponent(iqcBattery)}&carrierName=${encodeURIComponent(iqcCarrier)}&messageText=${encodeURIComponent(text)}`;
+                        const res = await fetch(apiUrl);
+                        const blob = await res.blob();
+                        setResult({ type: 'image', content: URL.createObjectURL(blob) });
+                    } else if (tab === 'gopay') {
+                        await generateGoPay();
+                    } else if (tab === 'dana') {
+                        await generateDana();
+                    } else {
+                        let api = "";
+                        const enc = encodeURIComponent(text);
+                        if (tab === 'brat') api = `https://api.theresav.biz.id/maker/brat?text=${enc}`;
+                        if (tab === 'bratvid') api = `https://api.theresav.biz.id/maker/bratvid?text=${enc}&format=mp4`;
+                        if (tab === 'bratnime') api = `https://api.theresav.biz.id/maker/bratanime?text=${enc}&apikey=${API_KEY}`;
+                        if (tab === 'graffiti') api = `https://api.siputzx.my.id/api/m/ephoto360?url=${encodeURIComponent("https://en.ephoto360.com/create-a-cartoon-style-graffiti-text-effect-online-668.html")}&text1=${enc}`;
+                        if (tab === 'bratbahlil') api = `https://api.ikyyxd.my.id/maker/bratbahlil?text=${enc}`;
+
+                        if (!api) {
+                            setLoading(false);
+                            return;
+                        }
+
+                        const res = await fetch(api);
+                        const blob = await res.blob();
+                        const type = tab === 'bratvid' ? 'video' : 'image';
+                        setResult({ type, content: URL.createObjectURL(blob) });
+                    }
+                } catch (e) { alert('Error: ' + e.message); }
+                setLoading(false);
+            };
+
+            const loadImage = (src) => new Promise((res, rej) => {
+                const img = new Image(); img.crossOrigin = 'Anonymous'; img.onload = () => res(img); img.onerror = rej; img.src = src;
+            });
+
+            const generateGoPay = async () => {
+                const baseUrl = 'https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main';
+                const [bgImg] = await Promise.all([loadImage(`${baseUrl}/Image/quality_restoration_20260501080321276.jpg`)]);
+                const canvas = document.createElement('canvas'); canvas.width = bgImg.width; canvas.height = bgImg.height;
+                const ctx = canvas.getContext('2d'); ctx.drawImage(bgImg, 0, 0);
+                ctx.fillStyle = '#fff'; ctx.textBaseline = 'top';
+                ctx.font = 'bold 34px sans-serif'; 
+                ctx.fillText('Rp', 62, 250);
+                const rpW = ctx.measureText('Rp').width;
+                ctx.font = 'bold 95px serif'; ctx.fillText(gopaySaldo, 62 + rpW + 10, 225);
+                ctx.font = 'bold 34px sans-serif'; ctx.fillText(gopayKoin, 115, 400);
+                ctx.font = '600 34px sans-serif'; ctx.fillText(`Rp${gopayPengeluaran} udah terpakai di ${gopayBulan}`, 100, 510);
+                canvas.toBlob(blob => { if (blob) setResult({ type: 'image', content: URL.createObjectURL(blob) }) }, 'image/jpeg');
+            };
+
+            const generateDana = async () => {
+                const raw = Number(danaNominal.replace(/\./g, ''));
+                const bg = await loadImage('https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Image/20260501192538912.jpg');
+                const canvas = document.createElement('canvas'); canvas.width = bg.width; canvas.height = bg.height;
+                const ctx = canvas.getContext('2d'); ctx.drawImage(bg, 0, 0);
+                ctx.font = 'bold 19px sans-serif'; ctx.fillStyle = '#a9e6ff'; ctx.textBaseline = 'top';
+                ctx.fillText('Rp', 70, 62);
+                const rpW = ctx.measureText('Rp').width;
+                ctx.font = 'bold 29px sans-serif'; ctx.fillStyle = '#FFFFFF'; 
+                ctx.fillText(raw.toLocaleString('id-ID'), 70 + rpW + 6, 54);
+                canvas.toBlob(blob => { if (blob) setResult({ type: 'image', content: URL.createObjectURL(blob) }) }, 'image/png');
+            };
+
+            const tabs = [
+                { id: 'brat', label: 'Brat', color: 'bg-yellow-400' },
+                { id: 'bratvid', label: 'BRATVID', color: 'bg-green-400' },
+                { id: 'bratnime', label: 'BratAnime', color: 'bg-pink-400' },
+                { id: 'bratbahlil', label: 'BratBahlil', color: 'bg-lime-400' },
+                { id: 'graffiti', label: 'Grafiti', color: 'bg-blue-400' },
+                { id: 'iqc', label: 'IQC', color: 'bg-orange-400' },
+                { id: 'uploader', label: 'UpLOADER', color: 'bg-purple-400' },
+                { id: 'ssweb', label: 'SSWEB', color: 'bg-red-400' },
+                { id: 'gopay', label: 'GoPay', color: 'bg-teal-400' },
+                { id: 'dana', label: 'Dana', color: 'bg-sky-400' },
+            ];
+
+            return (
+                <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#0A0A0A] text-white' : 'bg-[#F2F2F2] text-black'} transition-colors duration-500 overflow-x-hidden border-[4px] md:border-[8px] border-black`}>
+                    <nav className="fixed top-0 left-0 right-0 z-50 p-2 md:p-2 border-b-[3px] md:border-b-[4px] border-black bg-[#FF5252] h-16 md:h-20 flex items-center shrink-0">
+                        <div className="max-w-4xl w-full mx-auto flex justify-between items-center px-1 md:px-4">
+                            <div className="text-xl md:text-2xl font-black italic border-[3px] md:border-[4px] border-black bg-white px-3 md:px-4 py-1 neo-shadow-sm text-black tracking-tighter uppercase">
+                                Hidz Forum
+                            </div>
+                            <button 
+                                onClick={() => setTheme(p => p === 'light' ? 'dark' : 'light')}
+                                className="p-1.5 md:p-2 border-[3px] md:border-[4px] border-black bg-yellow-400 text-black neo-shadow-sm neo-active flex items-center justify-center transition-transform hover:-translate-y-[2px]"
+                            >
+                                {theme === 'dark' ? <Sun className="w-5 h-5 md:w-6 md:h-6 stroke-[3] md:stroke-[4]" /> : <Moon className="w-5 h-5 md:w-6 md:h-6 stroke-[3] md:stroke-[4]" />}
+                            </button>
+                        </div>
+                    </nav>
+
+                    <main className="pt-24 md:pt-28 pb-8 px-3 md:px-4 max-w-2xl mx-auto">
+                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-6 md:mb-8 justify-center">
+                            {tabs.map((t) => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => { setTab(t.id); setResult(null); }}
+                                    className={`px-3 py-1.5 md:px-4 md:py-2 border-[2px] md:border-[4px] border-black font-black text-[9px] md:text-xs uppercase tracking-widest neo-shadow-sm neo-active transition-all ${tab === t.id ? (theme === 'dark' ? 'bg-white text-black translate-x-[2px] translate-y-[2px] md:translate-x-[4px] md:translate-y-[4px] shadow-none !shadow-none' : 'bg-black text-white translate-x-[2px] translate-y-[2px] md:translate-x-[4px] md:translate-y-[4px] shadow-none !shadow-none') : t.color + ' text-black'}`}
+                                >
+                                    {t.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="space-y-8">
+                            <div className={`border-[3px] md:border-[4px] border-black p-4 md:p-8 neo-shadow-lg ${theme === 'dark' ? 'bg-[#151515]' : 'bg-white'}`}>
+                                <div className="flex items-start justify-between mb-6 md:mb-8">
+                                    <div>
+                                        <h2 className="text-2xl md:text-4xl font-black italic uppercase underline decoration-[6px] md:decoration-8 decoration-yellow-400 leading-none">
+                                            {tab}
+                                        </h2>
+                                        <p className="text-[10px] md:text-xs font-bold mt-2 opacity-60 uppercase tracking-tighter">HidzTools</p>
+                                    </div>
+                                    {loading ? <div className="spinner"></div> : <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 bg-black flex items-center justify-center text-white font-black text-xl md:text-2xl border-[3px] md:border-[4px] border-black">?</div>}
+                                </div>
+
+                                <div className="space-y-6">
+                                    {tab === 'uploader' ? (
+                                        <input type="file" ref={fileInputRef} className="w-full border-[4px] border-black p-4 bg-gray-50 text-black font-bold text-lg focus:bg-white focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                    ) : tab === 'gopay' ? (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Saldo</label>
+                                                <input type="text" value={gopaySaldo} onChange={e => setGopaySaldo(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Koin</label>
+                                                <input type="text" value={gopayKoin} onChange={e => setGopayKoin(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Pengeluaran</label>
+                                                <input type="text" value={gopayPengeluaran} onChange={e => setGopayPengeluaran(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Bulan</label>
+                                                <input type="text" value={gopayBulan} onChange={e => setGopayBulan(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                            </div>
+                                        </div>
+                                    ) : tab === 'dana' ? (
+                                        <div className="space-y-2">
+                                            <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Nominal</label>
+                                            <input type="text" value={danaNominal} onChange={e => setDanaNominal(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-xl bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" placeholder="1000" />
+                                        </div>
+                                    ) : tab === 'iqc' ? (
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-3 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Jam</label>
+                                                    <input type="time" value={iqcTime} onChange={e => setIqcTime(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Batre</label>
+                                                    <input type="number" value={iqcBattery} onChange={e => setIqcBattery(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Provider</label>
+                                                    <input type="text" value={iqcCarrier} onChange={e => setIqcCarrier(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Enter Your Text</label>
+                                                <textarea 
+                                                    value={text} onChange={e => setText(e.target.value)}
+                                                    className="w-full border-[4px] border-black p-4 bg-gray-50 focus:bg-white text-black font-bold h-32 text-xl focus:outline-none focus:ring-4 focus:ring-yellow-400 placeholder:opacity-30"
+                                                    placeholder="Pesan..."
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Enter Your Text</label>
+                                            <textarea 
+                                                value={text} onChange={e => setText(e.target.value)}
+                                                className="w-full border-[4px] border-black p-4 bg-gray-50 focus:bg-white text-black font-bold h-32 text-xl focus:outline-none focus:ring-4 focus:ring-yellow-400 placeholder:opacity-30"
+                                                placeholder={tab === 'ssweb' ? 'https://google.com' : 'Type something bold...'}
+                                            />
+                                        </div>
+                                    )}
+
+                                    <button 
+                                        onClick={handleProcess} disabled={loading}
+                                        className="w-full bg-[#FFE61D] text-black border-[3px] md:border-[4px] border-black py-3 md:py-4 font-black text-lg md:text-xl uppercase tracking-widest neo-shadow neo-active disabled:opacity-50 transition-all mt-4"
+                                    >
+                                        {loading ? 'WAIT...' : 'GENERATE 🚀'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {result && (
+                                <div className={`border-[3px] md:border-[4px] border-black p-4 md:p-6 neo-shadow-lg ${theme === 'dark' ? 'bg-[#1A1A1A]' : 'bg-[#E5E5E5]'}`}>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className="font-black text-[10px] md:text-xs uppercase italic tracking-widest">Live Preview</div>
+                                        {result.type !== 'url' && (
+                                            <a href={result.content} download className="px-4 py-1.5 md:px-6 md:py-2 border-[3px] md:border-[4px] border-black bg-emerald-400 neo-shadow-sm neo-active text-[10px] md:text-xs font-black inline-block text-black hover:-translate-y-[2px] transition-transform">
+                                                DOWNLOAD PNG
+                                            </a>
+                                        )}
+                                    </div>
+                                    <div className="border-[3px] md:border-[4px] border-black bg-white p-2 overflow-hidden flex justify-center">
+                                        {result.type === 'image' && <img src={result.content} className="max-w-full h-auto max-h-[500px] object-contain border-[3px] md:border-[4px] border-black neo-shadow" alt="Generated result" />}
+                                        {result.type === 'video' && <video src={result.content} controls autoPlay loop className="max-w-full border-[3px] md:border-[4px] border-black neo-shadow" />}
+                                        {result.type === 'url' && (
+                                            <div className="p-4 md:p-8 text-center w-full">
+                                                <p className="text-black break-all font-bold text-sm md:text-lg mb-6 bg-gray-50 p-3 md:p-4 border-[3px] md:border-[4px] border-black">{result.content}</p>
+                                                <button 
+                                                    onClick={() => { navigator.clipboard.writeText(result.content); alert('Copied!'); }}
+                                                    className="px-4 py-2 md:px-6 md:py-3 border-[3px] md:border-[4px] border-black bg-sky-400 text-xs md:text-sm font-black neo-shadow-sm neo-active text-black uppercase hover:-translate-y-[2px] transition-transform"
+                                                >
+                                                    Share Link
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </main>
+
+                    <footer className="h-16 bg-black border-t-[4px] border-black text-white flex items-center justify-between px-8 shrink-0 mt-12 mb-0">
+                        <span className="text-[9px] font-black uppercase tracking-widest">Hidz Tools</span>
+                        <div className="hidden sm:flex gap-6 text-[9px] font-black uppercase tracking-widest">
+                            <span>Terms of Chaos</span>
+                            <span>Brutalist Policy</span>
+                            <span className="text-yellow-400">By Hidz Forum</span>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    <script>
+(function(){
+  function removeAds(){
+    var ad=document.getElementById('server-footer-ad');
+    if(ad)ad.remove();
+    document.querySelectorAll('link[href*="ads.css"]').forEach(function(el){el.remove();});
+  }
+  removeAds();
+  new MutationObserver(function(){removeAds();}).observe(document.documentElement,{childList:true,subtree:true});
+})();
+</script>
+<link rel='stylesheet' href='/ads.css?v=5'><div id='server-footer-ad'>Hosting gratis dari <a href='https://diskon.com' target='_blank'>Diskon.com</a></div></body>
+</html>
