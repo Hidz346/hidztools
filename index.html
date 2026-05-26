@@ -14,7 +14,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;700;900&family=VT323&family=Space+Mono:ital,wght@0,400;0,700&display=swap" rel="stylesheet">
     
     <script>
       tailwind.config = {
@@ -22,6 +22,8 @@
           extend: {
             fontFamily: {
               sans: ['"Public Sans"', 'sans-serif'],
+              pixel: ['VT323', 'monospace'],
+              mono: ['"Space Mono"', 'monospace'],
             }
           }
         }
@@ -34,26 +36,80 @@
             overflow-x: hidden;
         }
 
-        /* Neo-brutalism Shadow & Effects */
-        .neo-shadow { box-shadow: 8px 8px 0px 0px rgba(0,0,0,1); }
-        .neo-shadow-lg { box-shadow: 12px 12px 0px 0px rgba(0,0,0,1); }
+        /* ─── Neo-brutalism Shadows ─── */
+        .neo-shadow    { box-shadow: 6px 6px 0px 0px rgba(0,0,0,1); }
+        .neo-shadow-lg { box-shadow: 10px 10px 0px 0px rgba(0,0,0,1); }
         .neo-shadow-sm { box-shadow: 4px 4px 0px 0px rgba(0,0,0,1); }
         .neo-active:active {
             box-shadow: 0px 0px 0px 0px rgba(0,0,0,1) !important;
             transform: translate(4px, 4px) !important;
         }
-        .neo-border { border: 4px solid black; }
 
-        /* Loading Spinner */
-        .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border-left-color: #000;
-            animation: spin 1s linear infinite;
+        /* ─── Y2K Chrome Gradient Text ─── */
+        .y2k-chrome {
+            background: linear-gradient(90deg, #FF0090, #FF6600, #FFFF00, #00FF88, #00FFFF, #FF0090);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: y2k-shift 4s linear infinite;
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* ─── Dark BG with Y2K grid ─── */
+        .dark-bg {
+            background-color: #0A0A0A;
+            background-image:
+                linear-gradient(rgba(255, 0, 144, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 144, 0.05) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+        .light-bg {
+            background-color: #F0F0F0;
+            background-image:
+                linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+
+        /* ─── Keyframes ─── */
+        @keyframes spin     { 0%   { transform: rotate(0deg);   } 100% { transform: rotate(360deg); } }
+        @keyframes blink    { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        @keyframes y2k-shift{ 0%   { background-position: 0% 50%;   } 100% { background-position: 300% 50%; } }
+        @keyframes marquee  { 0%   { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes float    { 0%, 100% { transform: translateY(0px) rotate(-6deg); } 50% { transform: translateY(-10px) rotate(6deg); } }
+
+        .y2k-blink   { animation: blink  1s step-end infinite; }
+        .y2k-marquee { animation: marquee 28s linear infinite; display: inline-block; }
+        .y2k-float   { animation: float  3.5s ease-in-out infinite; }
+
+        /* ─── Loading Spinner ─── */
+        .spinner {
+            border: 4px solid rgba(255, 0, 144, 0.15);
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            border-left-color: #FF0090;
+            animation: spin 0.8s linear infinite;
+        }
+
+        /* ─── Bento Cell ─── */
+        .bento-cell {
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.08s ease, box-shadow 0.08s ease;
+        }
+        .bento-cell:not(.bento-selected):hover {
+            transform: translate(-2px, -2px);
+        }
+        .bento-cell:active {
+            transform: translate(4px, 4px) !important;
+            box-shadow: none !important;
+        }
+
+        /* ─── Input focus: Y2K pink ring ─── */
+        input:focus, textarea:focus, select:focus {
+            outline: none !important;
+            box-shadow: 4px 4px 0 0 #FF0090, 0 0 0 3px rgba(255,0,144,0.3) !important;
+        }
     </style>
 </head>
 <body>
@@ -165,120 +221,177 @@
             };
 
             const generateDana = async () => {
-                const raw = Number(danaNominal.replace(/\./g, ''));
-                const bg = await loadImage('https://raw.githubusercontent.com/Ditzzx-vibecoder/Assets/main/Image/20260501192538912.jpg');
-                const canvas = document.createElement('canvas'); canvas.width = bg.width; canvas.height = bg.height;
-                const ctx = canvas.getContext('2d'); ctx.drawImage(bg, 0, 0);
-                ctx.font = 'bold 19px sans-serif'; ctx.fillStyle = '#a9e6ff'; ctx.textBaseline = 'top';
-                ctx.fillText('Rp', 70, 62);
-                const rpW = ctx.measureText('Rp').width;
-                ctx.font = 'bold 29px sans-serif'; ctx.fillStyle = '#FFFFFF'; 
-                ctx.fillText(raw.toLocaleString('id-ID'), 70 + rpW + 6, 54);
-                canvas.toBlob(blob => { if (blob) setResult({ type: 'image', content: URL.createObjectURL(blob) }) }, 'image/png');
+                const nominalValue = danaNominal.trim();
+                if (!nominalValue) return;
+                const apiUrl = `https://api.zenzxz.my.id/maker/fakedanav2?nominal=${encodeURIComponent(nominalValue)}&t=${Date.now()}`;
+                const res = await fetch(apiUrl);
+                if (!res.ok) throw new Error('API gagal: ' + res.status);
+                const blob = await res.blob();
+                setResult({ type: 'image', content: URL.createObjectURL(blob) });
             };
 
+            // ─── Tabs: added emoji + spanClass for Bento Grid ───
             const tabs = [
-                { id: 'brat', label: 'Brat', color: 'bg-yellow-400' },
-                { id: 'bratvid', label: 'BRATVID', color: 'bg-green-400' },
-                { id: 'bratnime', label: 'BratAnime', color: 'bg-pink-400' },
-                { id: 'bratbahlil', label: 'BratBahlil', color: 'bg-lime-400' },
-                { id: 'graffiti', label: 'Grafiti', color: 'bg-blue-400' },
-                { id: 'iqc', label: 'IQC', color: 'bg-orange-400' },
-                { id: 'uploader', label: 'UpLOADER', color: 'bg-purple-400' },
-                { id: 'ssweb', label: 'SSWEB', color: 'bg-red-400' },
-                { id: 'gopay', label: 'GoPay', color: 'bg-teal-400' },
-                { id: 'dana', label: 'Dana', color: 'bg-sky-400' },
+                { id: 'brat',       label: 'Brat',       color: 'bg-yellow-400', emoji: '🎵', spanClass: 'col-span-1 md:col-span-2' },
+                { id: 'bratvid',    label: 'BRATVID',    color: 'bg-green-400',  emoji: '🎬', spanClass: 'col-span-1' },
+                { id: 'bratnime',   label: 'BratAnime',  color: 'bg-pink-400',   emoji: '🌸', spanClass: 'col-span-1' },
+                { id: 'bratbahlil', label: 'BratBahlil', color: 'bg-lime-400',   emoji: '💢', spanClass: 'col-span-1' },
+                { id: 'graffiti',   label: 'Grafiti',    color: 'bg-blue-400',   emoji: '🎨', spanClass: 'col-span-1' },
+                { id: 'iqc',        label: 'IQC',        color: 'bg-orange-400', emoji: '📱', spanClass: 'col-span-1 md:col-span-2' },
+                { id: 'uploader',   label: 'UpLOADER',   color: 'bg-purple-400', emoji: '☁️', spanClass: 'col-span-2' },
+                { id: 'ssweb',      label: 'SSWEB',      color: 'bg-red-400',    emoji: '🖥️', spanClass: 'col-span-1' },
+                { id: 'gopay',      label: 'GoPay',      color: 'bg-teal-400',   emoji: '💳', spanClass: 'col-span-1' },
+                { id: 'dana',       label: 'Dana',        color: 'bg-sky-400',   emoji: '💸', spanClass: 'col-span-2 md:col-span-4' },
             ];
 
+            const activeTab = tabs.find(t => t.id === tab);
+
             return (
-                <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#0A0A0A] text-white' : 'bg-[#F2F2F2] text-black'} transition-colors duration-500 overflow-x-hidden border-[4px] md:border-[8px] border-black`}>
-                    <nav className="fixed top-0 left-0 right-0 z-50 p-2 md:p-2 border-b-[3px] md:border-b-[4px] border-black bg-[#FF5252] h-16 md:h-20 flex items-center shrink-0">
-                        <div className="max-w-4xl w-full mx-auto flex justify-between items-center px-1 md:px-4">
-                            <div className="text-xl md:text-2xl font-black italic border-[3px] md:border-[4px] border-black bg-white px-3 md:px-4 py-1 neo-shadow-sm text-black tracking-tighter uppercase">
-                                Hidz Forum
+                <div className={`min-h-screen ${theme === 'dark' ? 'dark-bg text-white' : 'light-bg text-black'} transition-colors duration-500 overflow-x-hidden`}>
+
+                    {/* ─── NAV ─── */}
+                    <nav className="fixed top-0 left-0 right-0 z-50 border-b-[4px] border-black">
+                        {/* Main bar */}
+                        <div className="bg-[#FF0090] h-14 md:h-16 flex items-center px-3 md:px-6">
+                            <div className="max-w-2xl w-full mx-auto flex justify-between items-center">
+                                <div className="flex items-center gap-2 md:gap-3">
+                                    <div className="text-lg md:text-xl font-black italic border-[3px] border-black bg-white px-3 py-1 neo-shadow-sm text-black tracking-tighter uppercase">
+                                        Hidz Forum
+                                    </div>
+                                    <span className="font-pixel text-yellow-200 text-xl hidden sm:block y2k-float select-none">★</span>
+                                </div>
+                                <button 
+                                    onClick={() => setTheme(p => p === 'light' ? 'dark' : 'light')}
+                                    className="p-2 border-[3px] border-black bg-yellow-400 text-black neo-shadow-sm neo-active flex items-center justify-center transition-transform hover:-translate-y-[2px]"
+                                >
+                                    {theme === 'dark' ? <Sun className="w-5 h-5 md:w-6 md:h-6 stroke-[3]" /> : <Moon className="w-5 h-5 md:w-6 md:h-6 stroke-[3]" />}
+                                </button>
                             </div>
-                            <button 
-                                onClick={() => setTheme(p => p === 'light' ? 'dark' : 'light')}
-                                className="p-1.5 md:p-2 border-[3px] md:border-[4px] border-black bg-yellow-400 text-black neo-shadow-sm neo-active flex items-center justify-center transition-transform hover:-translate-y-[2px]"
-                            >
-                                {theme === 'dark' ? <Sun className="w-5 h-5 md:w-6 md:h-6 stroke-[3] md:stroke-[4]" /> : <Moon className="w-5 h-5 md:w-6 md:h-6 stroke-[3] md:stroke-[4]" />}
-                            </button>
+                        </div>
+                        {/* Y2K Marquee Bar */}
+                        <div className="bg-black h-6 overflow-hidden flex items-center">
+                            <span className="y2k-marquee font-pixel text-[11px] text-yellow-400 tracking-[0.3em] whitespace-nowrap select-none">
+                                ★ BRAT &nbsp;✦ BRATVID &nbsp;★ BRATNIME &nbsp;✦ BRATBAHLIL &nbsp;★ GRAFFITI &nbsp;✦ IQC &nbsp;★ UPLOADER &nbsp;✦ SSWEB &nbsp;★ GOPAY &nbsp;✦ DANA &nbsp;★ BRAT &nbsp;✦ BRATVID &nbsp;★ BRATNIME &nbsp;✦ BRATBAHLIL &nbsp;★ GRAFFITI &nbsp;✦ IQC &nbsp;★ UPLOADER &nbsp;✦ SSWEB &nbsp;★ GOPAY &nbsp;✦ DANA &nbsp;
+                            </span>
                         </div>
                     </nav>
 
                     <main className="pt-24 md:pt-28 pb-8 px-3 md:px-4 max-w-2xl mx-auto">
-                        <div className="flex flex-wrap gap-1.5 md:gap-2 mb-6 md:mb-8 justify-center">
-                            {tabs.map((t) => (
-                                <button
-                                    key={t.id}
-                                    onClick={() => { setTab(t.id); setResult(null); }}
-                                    className={`px-3 py-1.5 md:px-4 md:py-2 border-[2px] md:border-[4px] border-black font-black text-[9px] md:text-xs uppercase tracking-widest neo-shadow-sm neo-active transition-all ${tab === t.id ? (theme === 'dark' ? 'bg-white text-black translate-x-[2px] translate-y-[2px] md:translate-x-[4px] md:translate-y-[4px] shadow-none !shadow-none' : 'bg-black text-white translate-x-[2px] translate-y-[2px] md:translate-x-[4px] md:translate-y-[4px] shadow-none !shadow-none') : t.color + ' text-black'}`}
-                                >
-                                    {t.label}
-                                </button>
-                            ))}
+
+                        {/* ─── HERO ─── */}
+                        <div className="text-center py-5 md:py-7">
+                            <div className="font-pixel text-xs tracking-[0.35em] opacity-30 mb-2 select-none">
+                                ✦ ✧ ★ ✦ ✧ ★ ✦ ✧ ★ ✦ ✧ ★ ✦ ✧
+                            </div>
+                            <h1 className="text-5xl md:text-7xl font-black italic uppercase tracking-tighter y2k-chrome leading-none">
+                                HidzTools
+                            </h1>
+                            <p className="font-pixel text-xs md:text-sm mt-2 opacity-40 tracking-[0.25em]">
+                                YOUR CHAOS GENERATOR // V2.0
+                            </p>
+                            <div className="font-pixel text-xs tracking-[0.35em] opacity-20 mt-2 select-none">
+                                ✦ ✧ ★ ✦ ✧ ★ ✦ ✧ ★ ✦ ✧ ★ ✦ ✧
+                            </div>
                         </div>
 
-                        <div className="space-y-8">
-                            <div className={`border-[3px] md:border-[4px] border-black p-4 md:p-8 neo-shadow-lg ${theme === 'dark' ? 'bg-[#151515]' : 'bg-white'}`}>
+                        {/* ─── BENTO GRID TABS ─── */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 md:mb-8">
+                            {tabs.map((t) => {
+                                const isActive = tab === t.id;
+                                return (
+                                    <div
+                                        key={t.id}
+                                        onClick={() => { setTab(t.id); setResult(null); }}
+                                        className={`${t.spanClass} bento-cell border-[3px] md:border-[4px] border-black p-3 md:p-4 min-h-[66px] md:min-h-[80px]
+                                            ${isActive
+                                                ? `${t.color} text-black bento-selected translate-x-[4px] translate-y-[4px]`
+                                                : `${theme === 'dark' ? 'bg-[#141414]' : 'bg-white'} neo-shadow`
+                                            }`}
+                                    >
+                                        <div className="text-xl md:text-2xl leading-none mb-1">{t.emoji}</div>
+                                        <div className="font-black text-[9px] md:text-[10px] uppercase tracking-[0.15em] leading-tight">
+                                            {t.label}
+                                        </div>
+                                        {isActive && (
+                                            <div className="font-pixel text-[9px] mt-1 y2k-blink">▮ ON</div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="space-y-6">
+
+                            {/* ─── MAIN CARD ─── */}
+                            <div className={`border-[3px] md:border-[4px] border-black p-4 md:p-8 neo-shadow-lg ${theme === 'dark' ? 'bg-[#0f0f0f]' : 'bg-white'}`}>
+
+                                {/* Card Header */}
                                 <div className="flex items-start justify-between mb-6 md:mb-8">
                                     <div>
-                                        <h2 className="text-2xl md:text-4xl font-black italic uppercase underline decoration-[6px] md:decoration-8 decoration-yellow-400 leading-none">
-                                            {tab}
+                                        <h2 className="text-3xl md:text-5xl font-black italic uppercase underline decoration-[5px] md:decoration-8 decoration-[#FF0090] leading-none tracking-tighter">
+                                            {activeTab?.label || tab}
                                         </h2>
-                                        <p className="text-[10px] md:text-xs font-bold mt-2 opacity-60 uppercase tracking-tighter">HidzTools</p>
+                                        <p className="font-pixel text-[10px] mt-2 opacity-40 tracking-wider">
+                                            HidzTools // {tab.toUpperCase()}
+                                        </p>
                                     </div>
-                                    {loading ? <div className="spinner"></div> : <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 bg-black flex items-center justify-center text-white font-black text-xl md:text-2xl border-[3px] md:border-[4px] border-black">?</div>}
+                                    {loading
+                                        ? <div className="spinner mt-1 shrink-0"></div>
+                                        : <div className={`w-10 h-10 md:w-12 md:h-12 shrink-0 ${activeTab?.color || 'bg-yellow-400'} flex items-center justify-center text-xl md:text-2xl border-[3px] md:border-[4px] border-black neo-shadow-sm`}>
+                                            {activeTab?.emoji || '?'}
+                                          </div>
+                                    }
                                 </div>
 
+                                {/* ─── Input Forms (unchanged logic) ─── */}
                                 <div className="space-y-6">
                                     {tab === 'uploader' ? (
-                                        <input type="file" ref={fileInputRef} className="w-full border-[4px] border-black p-4 bg-gray-50 text-black font-bold text-lg focus:bg-white focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                        <input type="file" ref={fileInputRef} className="w-full border-[4px] border-black p-4 bg-gray-50 text-black font-bold text-lg focus:bg-white" />
                                     ) : tab === 'gopay' ? (
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Saldo</label>
-                                                <input type="text" value={gopaySaldo} onChange={e => setGopaySaldo(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                <input type="text" value={gopaySaldo} onChange={e => setGopaySaldo(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Koin</label>
-                                                <input type="text" value={gopayKoin} onChange={e => setGopayKoin(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                <input type="text" value={gopayKoin} onChange={e => setGopayKoin(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Pengeluaran</label>
-                                                <input type="text" value={gopayPengeluaran} onChange={e => setGopayPengeluaran(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                <input type="text" value={gopayPengeluaran} onChange={e => setGopayPengeluaran(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold" />
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Bulan</label>
-                                                <input type="text" value={gopayBulan} onChange={e => setGopayBulan(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                <input type="text" value={gopayBulan} onChange={e => setGopayBulan(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-lg bg-gray-50 focus:bg-white font-bold" />
                                             </div>
                                         </div>
                                     ) : tab === 'dana' ? (
                                         <div className="space-y-2">
                                             <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Nominal</label>
-                                            <input type="text" value={danaNominal} onChange={e => setDanaNominal(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-xl bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" placeholder="1000" />
+                                            <input type="text" value={danaNominal} onChange={e => setDanaNominal(e.target.value)} className="w-full border-[4px] border-black p-4 text-black text-xl bg-gray-50 focus:bg-white font-bold" placeholder="1000" />
                                         </div>
                                     ) : tab === 'iqc' ? (
                                         <div className="space-y-4">
                                             <div className="grid grid-cols-3 gap-4">
                                                 <div className="space-y-2">
                                                     <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Jam</label>
-                                                    <input type="time" value={iqcTime} onChange={e => setIqcTime(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                    <input type="time" value={iqcTime} onChange={e => setIqcTime(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold" />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Batre</label>
-                                                    <input type="number" value={iqcBattery} onChange={e => setIqcBattery(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                    <input type="number" value={iqcBattery} onChange={e => setIqcBattery(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold" />
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Provider</label>
-                                                    <input type="text" value={iqcCarrier} onChange={e => setIqcCarrier(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold focus:outline-none focus:ring-4 focus:ring-yellow-400" />
+                                                    <input type="text" value={iqcCarrier} onChange={e => setIqcCarrier(e.target.value)} className="w-full border-[4px] border-black p-3 text-black text-sm bg-gray-50 focus:bg-white font-bold" />
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Enter Your Text</label>
                                                 <textarea 
                                                     value={text} onChange={e => setText(e.target.value)}
-                                                    className="w-full border-[4px] border-black p-4 bg-gray-50 focus:bg-white text-black font-bold h-32 text-xl focus:outline-none focus:ring-4 focus:ring-yellow-400 placeholder:opacity-30"
+                                                    className="w-full border-[4px] border-black p-4 bg-gray-50 focus:bg-white text-black font-bold h-32 text-xl placeholder:opacity-30"
                                                     placeholder="Pesan..."
                                                 />
                                             </div>
@@ -288,25 +401,29 @@
                                             <label className="block text-[10px] font-black uppercase tracking-widest mb-1">Enter Your Text</label>
                                             <textarea 
                                                 value={text} onChange={e => setText(e.target.value)}
-                                                className="w-full border-[4px] border-black p-4 bg-gray-50 focus:bg-white text-black font-bold h-32 text-xl focus:outline-none focus:ring-4 focus:ring-yellow-400 placeholder:opacity-30"
+                                                className="w-full border-[4px] border-black p-4 bg-gray-50 focus:bg-white text-black font-bold h-32 text-xl placeholder:opacity-30"
                                                 placeholder={tab === 'ssweb' ? 'https://google.com' : 'Type something bold...'}
                                             />
                                         </div>
                                     )}
 
+                                    {/* ─── Generate Button ─── */}
                                     <button 
                                         onClick={handleProcess} disabled={loading}
-                                        className="w-full bg-[#FFE61D] text-black border-[3px] md:border-[4px] border-black py-3 md:py-4 font-black text-lg md:text-xl uppercase tracking-widest neo-shadow neo-active disabled:opacity-50 transition-all mt-4"
+                                        className="w-full bg-[#FF0090] text-white border-[3px] md:border-[4px] border-black py-3 md:py-4 font-pixel text-xl md:text-2xl uppercase tracking-widest neo-shadow neo-active disabled:opacity-50 transition-all mt-2"
                                     >
-                                        {loading ? 'WAIT...' : 'GENERATE 🚀'}
+                                        {loading ? '⟳ LOADING...' : '★ GENERATE ★'}
                                     </button>
                                 </div>
                             </div>
 
+                            {/* ─── RESULT ─── */}
                             {result && (
-                                <div className={`border-[3px] md:border-[4px] border-black p-4 md:p-6 neo-shadow-lg ${theme === 'dark' ? 'bg-[#1A1A1A]' : 'bg-[#E5E5E5]'}`}>
+                                <div className={`border-[3px] md:border-[4px] border-black p-4 md:p-6 neo-shadow-lg ${theme === 'dark' ? 'bg-[#0f0f0f]' : 'bg-[#E5E5E5]'}`}>
                                     <div className="flex justify-between items-center mb-4">
-                                        <div className="font-black text-[10px] md:text-xs uppercase italic tracking-widest">Live Preview</div>
+                                        <div className="font-pixel text-[11px] md:text-xs uppercase tracking-[0.2em] opacity-50 flex items-center gap-2">
+                                            <span className="y2k-blink">★</span> Live Preview
+                                        </div>
                                         {result.type !== 'url' && (
                                             <a href={result.content} download className="px-4 py-1.5 md:px-6 md:py-2 border-[3px] md:border-[4px] border-black bg-emerald-400 neo-shadow-sm neo-active text-[10px] md:text-xs font-black inline-block text-black hover:-translate-y-[2px] transition-transform">
                                                 DOWNLOAD PNG
@@ -333,12 +450,13 @@
                         </div>
                     </main>
 
-                    <footer className="h-16 bg-black border-t-[4px] border-black text-white flex items-center justify-between px-8 shrink-0 mt-12 mb-0">
-                        <span className="text-[9px] font-black uppercase tracking-widest">Hidz Tools</span>
-                        <div className="hidden sm:flex gap-6 text-[9px] font-black uppercase tracking-widest">
-                            <span>Terms of Chaos</span>
-                            <span>Brutalist Policy</span>
-                            <span className="text-yellow-400">By Hidz Forum</span>
+                    {/* ─── FOOTER ─── */}
+                    <footer className="bg-black border-t-[4px] border-black text-white flex items-center justify-between px-6 py-4 mt-12 mb-0">
+                        <span className="font-pixel text-[11px] tracking-[0.25em] text-yellow-400">★ HIDZ TOOLS ★</span>
+                        <div className="hidden sm:flex gap-6 font-pixel text-[9px] tracking-widest opacity-60">
+                            <span>TERMS OF CHAOS</span>
+                            <span>BRUTALIST POLICY</span>
+                            <span className="text-[#FF0090]">BY HIDZ FORUM</span>
                         </div>
                     </footer>
                 </div>
